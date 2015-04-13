@@ -56,7 +56,7 @@ where ``USERNAME`` is the database user, ``PASSWORD`` is the corresponding passw
 
 #### Drop all database tables
 
-    mysqldump -u[USERNAME] -p[PASSWORD] --add-drop-table --no-data [DATABASE] | grep -e '^DROP \| FOREIGN_KEY_CHECKS' | mysql -u[USERNAME] -p[PASSWORD] [DATABASE]
+    mysqldump -uUSERNAME -pPASSWORD --add-drop-table --no-data DATABASE | grep -e '^DROP \| FOREIGN_KEY_CHECKS' | mysql -uUSERNAME -pPASSWORD DATABASE
 
 #### Re-create all database tables and run all migrations
     
