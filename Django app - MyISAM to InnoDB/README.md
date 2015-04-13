@@ -48,7 +48,7 @@ Use ``mysqldump`` and ensure that:
 
 * You do not include queries for recreating the DB tables (``no-create-info``), as this would essentially record queries for recreating the ``MyISAM`` tables
 * Use complete ``INSERT`` statements (``--complete-insert``), so that each INSERT query will specify exactly which column takes each value
-* Use ``REPLACE INTO`` instead of ``INSERT INTO`` (``--replace``), so that duplicates won't blow up the data restore later ([When and how can duplicates appear?](#When-and-how-can-duplicates-appear))
+* Use ``REPLACE INTO`` instead of ``INSERT INTO`` (``--replace``), so that duplicates won't blow up the data restore later ([When and how can duplicates appear?](#when-and-how-can-duplicates-appear))
    
         mysqldump -uUSERNAME -pPASSWORD --complete-insert --replace --no-create-info DATABASE > BACKUP
 
@@ -67,7 +67,7 @@ where ``manage`` is the Django application's management script.
 
 Since we earlier specified ``InnoDB`` to be the default storage engine for all newly created database tables all these newly created tables will be using ``InnoDB``, and have real foreign key constraints where needed.
 
-Note that at this point some of the tables we just created, might contain records. See [When and how can duplicates appear?](#When-and-how-can-duplicates-appear)
+Note that at this point some of the tables we just created, might contain records. See [When and how can duplicates appear?](#when-and-how-can-duplicates-appear)
 
 #### Restore the database backup
   
