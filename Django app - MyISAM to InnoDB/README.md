@@ -19,6 +19,8 @@ So, on a higher level what we need to do is the following:
 
 ### Steps
 
+
+
 #### Ensure that all future database tables will be using the ``InnoDB`` storage engine
   
   Edit your Django application's ``settings.py`` file, and make sure that the default storage engine is set to ``InnoDB``
@@ -80,6 +82,10 @@ Note that at this point some of the tables we just created, might contain record
 or
 
     sudo service nginx restart
+
+### Sample
+
+You can see a gist [here](https://gist.github.com/stargazer/2ee2f9f6e158616b0ef5)
 
 ### Tips
     
