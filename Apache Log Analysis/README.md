@@ -1,87 +1,85 @@
-# Apache one-liners for Log file analysis
+## Apache log analysis on the command line
 
 The following scripts assume that:
 
-* The ``Combined Log Format``, or an extension of it is used. 
-* The log file is at location ``log/access``. Modify according to the actual log file location.
-* The analysis is performed on the last 1 million requests. Modify accordingly.
+* Apache's ``Combined Log Format``, or an extension of it is used. 
+* The log file is at location ``log/access``. Modify accordingly.
 
-## Most frequent requests
+### Frequent requests
 
-### Most frequent requests (method + URL without querystring)
+#### Most frequent requests (method + URL without querystring)
 
-	tail -n 1000000 log/access | awk -F"[ ?]" '{print $6, $7}' | sort | uniq -c | sort -rn | head -20
+	cat log/access | awk -F"[ ?]" '{print $6, $7}' | sort | uniq -c | sort -rn | head -20
 
 Notice how ``awk`` uses  the regular expression``"[ ?]"`` as a separator. 
 This means that both characters ``space`` and ``?`` are separators, which causes the url to be split if a ``?`` character is found, and therefore separates it from the querystring.
 
-### Most frequent requests (method + URL with querystring)
+#### Most frequent requests (method + URL with querystring)
 
-	tail -n 1000000 log/access | awk '{print $6, $7}' | sort | uniq -c | sort -n -r | head -n 20
+	cat log/access | awk '{print $6, $7}' | sort | uniq -c | sort -n -r | head -n 20
 
-### Most frequest referrers
+#### Most frequest referrers
 
-	tail -n 1000000 log/access | awk -F\" '{print $6}' | sort | uniq -c | sort -rn | head -20
+	cat log/access | awk -F\" '{print $6}' | sort | uniq -c | sort -rn | head -20
 
-## Slowest requests
+### Slow requests
 Note: Requires an extension of the ``Combined Log Format`` that includes the ``%D`` parameter. For example:
 
 	LogFormat "%h %l %u %t \"%r\" %>s %b %D \"%{Referer}i\" \"%{User-agent}i\""
 
-### Slowest requests
+#### Slowest requests
 
-	tail -n 1000000 log/access | awk -F" " '{print $4, $5, $6, $7, $10, $11}' |  sort -h -r -k6 | head -n 20
+	cat log/access | awk -F" " '{print $4, $5, $6, $7, $10, $11}' |  sort -h -r -k6 | head -n 20
 
-### Slowest requests with a status code other than 500
+#### Slowest requests with a status code other than 500
 
-	tail -n 1000000 log/access | awk -F" " '($9 ~! 500){print $4, $6, $7, $9, $10, $11}' | sort -h -r -k6 | head -n 20
+	cat log/access | awk -F" " '($9 ~! 500){print $4, $6, $7, $9, $10, $11}' | sort -h -r -k6 | head -n 20
 
+### Requests with large responses
 
-## Requests with the largest response
+#### Requests with the largest response
 
-### Requests with the largest response
+	cat log/access | awk -F" " '{print $4, $5, $6, $7, $10, $11}' |  sort -h -r -k5 | head -n 20
 
-	tail -n 1000000 log/access | awk -F" " '{print $4, $5, $6, $7, $10, $11}' |  sort -h -r -k5 | head -n 20
+#### Requests with the largest response, with a status code other than 500
 
-### Requests with the largest response, with a status code other than 500
+	cat log/access | awk -F" " '($9 ~! 500){print $4, $6, $7, $9, $10, $11}' | sort -h -r -k5 | head -n 20
 
-	tail -n 1000000 log/access | awk -F" " '($9 ~! 500){print $4, $6, $7, $9, $10, $11}' | sort -h -r -k5 | head -n 20
+### Server Crashes
 
-## Crashes
+#### Latest requests to crash the server (generated a status code 500 )
 
-### Latest requests to crash the server (generated a status code 500 )
-
-	tail -n 1000000 log/access | awk -F" " '($9 == 500){print $4, $6, $7, $9, $10, $11}' | tail -n 20
+    cat log/access | awk -F" " '($9 == 500){print $4, $6, $7, $9, $10, $11}' | tail -n 20
 
 Notice how ``awk`` filters its input based on the condition that the 9th field(status code) is equal to 500.	
 
-## Totals
+### Totals
 
-### Total number of requests per day
+#### Total number of requests per day
 Outputs the total number of requests per day
 
-	tail -n 1000000 log/access | awk '{print $4}' | cut -d: -f1 | uniq -c
+	cat log/access | awk '{print $4}' | cut -d: -f1 | uniq -c
 
 Once a peak has been spotted on a particular day, we can "zoom in" on that day, and view the total number of requests per hour. See next script	
 
-### Total number of requests per hour, for a certain day
+#### Total number of requests per hour, for a certain day
 Outputs the total number of requests per hour, for the 23rd of January
 
-	tail -n 1000000 log/access | grep "23/Jan" | cut -d[ -f2 | cut -d] -f1 | awk -F: '{print $2":00"}' | sort -n | uniq -c
+	cat log/access | grep "23/Jan" | cut -d[ -f2 | cut -d] -f1 | awk -F: '{print $2":00"}' | sort -n | uniq -c
 
 Once a peak has been spotted on a particular hour, we can "zoom in" on the hour, and view the total number of requests per minute. See next script.
 
-### Total number of requests per minute, for a certain hour
+#### Total number of requests per minute, for a certain hour
 Outputs the total number of requests per minute for 15:00 - 15:59, on 02/Sep/2013
 
-	tail -n 1000000 log/access | grep "02/Sep/2013:15" | cut -d[ -f2 | cut -d] -f1 | awk -F: '{print $2":"$3}' | sort -nk1 -nk2 | uniq -c | awk '{ if ($1 > 10) print $0}'
+	cat log/access | grep "02/Sep/2013:15" | cut -d[ -f2 | cut -d] -f1 | awk -F: '{print $2":"$3}' | sort -nk1 -nk2 | uniq -c | awk '{ if ($1 > 10) print $0}'
 
 Once a peak has been spotted on a particular minute, we can "zoom in" on that minute, and analyze those requests more closely. See next script.
 
-### All requests, on a particular minute
+#### All requests, on a particular minute
 Outputs all requests that took place on 15:52 of 02/Sep/2013
 
-	tail -n 1000000 log/access | grep "02/Sep/2013:15:52"
+	cat log/access | grep "02/Sep/2013:15:52"
 
 ## Sources
 * [View level of traffic with Apache log](http://www.inmotionhosting.com/support/website/server-usage/view-level-of-traffic-with-apache-access-log)
